@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dating with me~</title>
+    <meta name="description" content="一个会撒娇、会躲避拒绝按钮的约会邀请小网站。" />
+    <style>
+      :root {
+        --background: #fff7fb;
+        --foreground: #24212a;
+        --ink: #2a2730;
+        --muted: #7d7481;
+        --pink: #ec4bb6;
+        --pink-soft: #ffd5ee;
+        --cream: #fffdf7;
+        --line: #2d2931;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 12% 20%, rgba(255, 177, 219, 0.52), transparent 28%),
+          radial-gradient(circle at 85% 78%, rgba(191, 232, 203, 0.66), transparent 30%),
+          linear-gradient(135deg, #fff2fa 0%, #fffdf7 54%, #edf7ee 100%);
+        color: var(--foreground);
+        font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .date-app {
+        align-items: center;
+        display: flex;
+        isolation: isolate;
+        justify-content: center;
+        min-height: 100vh;
+        overflow: hidden;
+        padding: clamp(18px, 4vw, 48px);
+        position: relative;
+      }
+
+      .date-app::before {
+        border: 5px solid rgba(45, 41, 49, 0.34);
+        border-radius: 42px;
+        content: "";
+        inset: clamp(14px, 3vw, 38px);
+        pointer-events: none;
+        position: absolute;
+        transform: rotate(-2deg);
+      }
+
+      .floating-copy,
+      .flower {
+        pointer-events: none;
+        position: absolute;
+        text-shadow: 0 2px 0 rgba(255, 255, 255, 0.86);
+        z-index: 0;
+      }
+
+      .floating-copy {
+        color: rgba(68, 62, 73, 0.7);
+        font-size: clamp(17px, 2.2vw, 26px);
+        font-weight: 800;
+      }
+
+      .copy-one {
+        left: 18%;
+        top: 14%;
+      }
+
+      .copy-two {
+        right: 18%;
+        top: 17%;
+      }
+
+      .copy-three {
+        right: 12%;
+        top: 31%;
+      }
+
+      .flower {
+        animation: float 5.4s ease-in-out infinite;
+        color: var(--pink);
+        font-size: clamp(24px, 4vw, 42px);
+      }
+
+      .flower-a {
+        left: 9%;
+        top: 68%;
+      }
+
+      .flower-b {
+        right: 12%;
+        top: 67%;
+        animation-delay: -1.4s;
+      }
+
+      .flower-c {
+        left: 54%;
+        top: 18%;
+        animation-delay: -2.5s;
+      }
+
+      .invitation-card {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.58);
+        border: 4px solid rgba(45, 41, 49, 0.18);
+        border-radius: clamp(30px, 5vw, 54px);
+        box-shadow: 0 30px 90px rgba(77, 55, 73, 0.16);
+        display: flex;
+        justify-content: center;
+        max-width: 940px;
+        min-height: min(720px, 86vh);
+        padding: clamp(20px, 4vw, 46px);
+        position: relative;
+        width: min(100%, 940px);
+        z-index: 1;
+      }
+
+      .panel {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.92);
+        border: 3px solid var(--line);
+        border-radius: 28px;
+        box-shadow: 15px 16px 0 rgba(45, 41, 49, 0.92);
+        display: none;
+        flex-direction: column;
+        max-width: 700px;
+        min-height: 430px;
+        overflow: hidden;
+        padding: clamp(28px, 5vw, 56px);
+        position: relative;
+        text-align: center;
+        width: 100%;
+      }
+
+      .panel.active {
+        display: flex;
+      }
+
+      .ask-panel {
+        min-height: 520px;
+      }
+
+      .avatar-stack {
+        align-items: center;
+        background: var(--cream);
+        border: 3px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 13px 12px 0 var(--pink);
+        display: flex;
+        height: 112px;
+        justify-content: center;
+        margin-bottom: 24px;
+        width: 112px;
+      }
+
+      .avatar-stack.big {
+        height: 126px;
+        width: 126px;
+      }
+
+      .avatar {
+        font-size: 64px;
+        line-height: 1;
+      }
+
+      .kicker {
+        color: var(--muted);
+        font-size: clamp(15px, 2vw, 19px);
+        font-weight: 800;
+        margin: 0 0 14px;
+      }
+
+      h1,
+      h2 {
+        color: var(--ink);
+        font-weight: 950;
+        letter-spacing: 0;
+        line-height: 1.1;
+        margin: 0;
+        text-wrap: balance;
+      }
+
+      h1 {
+        font-size: clamp(42px, 8vw, 82px);
+        max-width: 640px;
+      }
+
+      h2 {
+        font-size: clamp(34px, 6vw, 62px);
+        max-width: 650px;
+      }
+
+      p {
+        color: var(--muted);
+        font-size: clamp(17px, 2.2vw, 22px);
+        font-weight: 800;
+        line-height: 1.55;
+        margin: 18px 0 0;
+        max-width: 620px;
+      }
+
+      .ask-actions {
+        height: 118px;
+        margin-top: 40px;
+        max-width: 560px;
+        position: relative;
+        width: 100%;
+      }
+
+      .primary-button,
+      .secondary-button,
+      .ghost-button {
+        align-items: center;
+        border: 3px solid var(--line);
+        border-radius: 999px;
+        cursor: pointer;
+        display: inline-flex;
+        font-weight: 950;
+        justify-content: center;
+        letter-spacing: 0;
+        min-height: 64px;
+        padding: 0 36px;
+        transition:
+          transform 180ms ease,
+          box-shadow 180ms ease,
+          background 180ms ease;
+      }
+
+      .primary-button {
+        background: var(--pink);
+        box-shadow: 0 10px 0 var(--line);
+        color: white;
+        font-size: 20px;
+      }
+
+      .primary-button:hover {
+        box-shadow: 0 7px 0 var(--line);
+        transform: translateY(3px);
+      }
+
+      .primary-button:active {
+        box-shadow: 0 2px 0 var(--line);
+        transform: translateY(8px);
+      }
+
+      .ask-actions .primary-button {
+        left: 5%;
+        position: absolute;
+        top: 10px;
+        width: 220px;
+      }
+
+      .secondary-button {
+        background: white;
+        box-shadow: 0 10px 0 var(--line);
+        color: var(--ink);
+        font-size: 19px;
+      }
+
+      .runaway-button {
+        min-width: 190px;
+        position: absolute;
+        right: 5%;
+        top: 10px;
+        transition:
+          transform 220ms cubic-bezier(.2, .9, .25, 1.35),
+          box-shadow 180ms ease,
+          background 180ms ease;
+      }
+
+      .wide {
+        margin-top: 34px;
+        min-width: min(100%, 330px);
+      }
+
+      .ghost-button {
+        background: white;
+        box-shadow: 0 8px 0 var(--line);
+        color: var(--ink);
+        margin-top: 26px;
+      }
+
+      .icon-tile {
+        align-items: center;
+        background: #e6403a;
+        border: 3px solid var(--line);
+        border-radius: 22px;
+        box-shadow: 9px 9px 0 rgba(45, 41, 49, 0.92);
+        display: flex;
+        font-size: 48px;
+        height: 96px;
+        justify-content: center;
+        margin-bottom: 30px;
+        width: 96px;
+      }
+
+      .icon-tile.pink {
+        background: var(--pink);
+      }
+
+      .field-grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 30px;
+        width: 100%;
+      }
+
+      .choice-field {
+        background: #fffafe;
+        border: 3px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 8px 8px 0 var(--line);
+        color: var(--ink);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 18px;
+        text-align: left;
+      }
+
+      .choice-field span {
+        color: var(--pink);
+        font-size: 14px;
+        font-weight: 950;
+      }
+
+      .choice-field input {
+        background: transparent;
+        border: 0;
+        color: var(--ink);
+        font-size: clamp(22px, 4vw, 32px);
+        font-weight: 900;
+        min-width: 0;
+        outline: 0;
+        width: 100%;
+      }
+
+      .food-panel {
+        max-width: 760px;
+      }
+
+      .food-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin: 28px 0 4px;
+        width: 100%;
+      }
+
+      .food-card {
+        align-items: center;
+        aspect-ratio: 1.38;
+        background: #fffdfb;
+        border: 3px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 7px 8px 0 var(--line);
+        color: var(--ink);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        font-size: 18px;
+        font-weight: 950;
+        gap: 10px;
+        justify-content: center;
+        min-width: 0;
+        padding: 12px;
+        transition:
+          background 160ms ease,
+          box-shadow 160ms ease,
+          transform 160ms ease;
+      }
+
+      .food-card span {
+        font-size: 34px;
+        line-height: 1;
+      }
+
+      .food-card:hover,
+      .food-card.selected {
+        background: var(--pink-soft);
+        box-shadow: 4px 5px 0 var(--line);
+        transform: translate(3px, 3px);
+      }
+
+      .ending-panel {
+        min-height: 540px;
+      }
+
+      .summary-card {
+        background: #fffafe;
+        border: 3px solid var(--line);
+        border-radius: 22px;
+        box-shadow: 10px 12px 0 var(--line);
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 30px;
+        padding: 18px;
+        text-align: left;
+        width: min(100%, 520px);
+      }
+
+      .summary-card div {
+        border: 2px solid rgba(45, 41, 49, 0.22);
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .summary-card div:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .summary-card span {
+        color: var(--pink);
+        display: block;
+        font-size: 12px;
+        font-weight: 950;
+        margin-bottom: 8px;
+      }
+
+      .summary-card strong {
+        color: var(--ink);
+        display: block;
+        font-size: clamp(20px, 4vw, 30px);
+        line-height: 1.1;
+      }
+
+      .confetti {
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        position: absolute;
+      }
+
+      .confetti span {
+        animation: confetti 2.6s ease-in-out infinite;
+        border-radius: 3px;
+        height: 15px;
+        position: absolute;
+        top: -30px;
+        width: 9px;
+      }
+
+      @keyframes confetti {
+        0% {
+          opacity: 0;
+          transform: translateY(-30px) rotate(0deg);
+        }
+
+        12% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0;
+          transform: translateY(620px) rotate(420deg);
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-8deg);
+        }
+
+        50% {
+          transform: translateY(-14px) rotate(8deg);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .date-app {
+          padding: 18px;
+        }
+
+        .date-app::before {
+          border-radius: 28px;
+          inset: 10px;
+        }
+
+        .floating-copy {
+          display: none;
+        }
+
+        .invitation-card {
+          border-radius: 30px;
+          min-height: calc(100vh - 36px);
+          padding: 16px;
+        }
+
+        .panel {
+          border-radius: 22px;
+          box-shadow: 8px 10px 0 var(--line);
+          min-height: 470px;
+          padding: 28px 20px;
+        }
+
+        .avatar-stack {
+          height: 92px;
+          width: 92px;
+        }
+
+        .avatar {
+          font-size: 52px;
+        }
+
+        .ask-actions {
+          height: 148px;
+          margin-top: 30px;
+        }
+
+        .ask-actions .primary-button {
+          left: 50%;
+          top: 0;
+          transform: translateX(-50%);
+          width: min(88%, 270px);
+        }
+
+        .ask-actions .primary-button:hover,
+        .ask-actions .primary-button:active {
+          transform: translateX(-50%);
+        }
+
+        .runaway-button {
+          left: 6%;
+          min-width: 0;
+          right: 6%;
+          top: 84px;
+          width: auto;
+        }
+
+        .field-grid,
+        .food-grid,
+        .summary-card {
+          grid-template-columns: 1fr;
+        }
+
+        .summary-card div:last-child {
+          grid-column: auto;
+        }
+
+        .food-grid {
+          gap: 12px;
+          max-height: 360px;
+          overflow: auto;
+          padding-right: 4px;
+        }
+
+        .food-card {
+          aspect-ratio: auto;
+          min-height: 78px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="date-app">
+      <div class="floating-copy copy-one">天呐</div>
+      <div class="floating-copy copy-two">年轻真好</div>
+      <div class="floating-copy copy-three">接接接</div>
+      <div class="flower flower-a">✿</div>
+      <div class="flower flower-b">✿</div>
+      <div class="flower flower-c">✿</div>
+
+      <section class="invitation-card">
+        <div class="panel ask-panel active" data-step="ask">
+          <div class="avatar-stack" aria-hidden="true">
+            <span class="avatar">🐶</span>
+          </div>
+          <p class="kicker">系统检测到：对方已经紧张到开始深呼吸</p>
+          <h1>可以和我一起约会吗？</h1>
+          <div class="ask-actions">
+            <button class="primary-button" data-next="confirm">
+              我愿意 <span aria-hidden="true">❤</span>
+            </button>
+            <button class="secondary-button runaway-button" type="button" id="noButton">no</button>
+          </div>
+        </div>
+
+        <div class="panel confirm-panel" data-step="confirm">
+          <div class="icon-tile">🥜</div>
+          <h2>等下，你真的点了愿意？？😭</h2>
+          <p>我都已经准备好被你点“不要”了。</p>
+          <button class="primary-button wide" data-next="schedule">好啦好啦 →</button>
+        </div>
+
+        <div class="panel schedule-panel" data-step="schedule">
+          <div class="icon-tile pink">📅</div>
+          <h2>所以...你什么时候有空？☺️</h2>
+          <div class="field-grid">
+            <label class="choice-field">
+              <span>选一天 📆</span>
+              <input id="dateInput" type="date" />
+            </label>
+            <label class="choice-field">
+              <span>几点见 🕰️</span>
+              <input id="timeInput" type="time" value="19:00" />
+            </label>
+          </div>
+          <button class="primary-button wide" data-next="food">
+            这个时间可以 <span aria-hidden="true">❤</span>
+          </button>
+        </div>
+
+        <div class="panel food-panel" data-step="food">
+          <h2>我们吃点什么？ 🍽️✨</h2>
+          <p>挑一个今天的约会氛围。</p>
+          <div class="food-grid" id="foodGrid"></div>
+          <button class="primary-button wide" data-next="ending">就吃这个</button>
+        </div>
+
+        <div class="panel ending-panel" data-step="ending">
+          <div class="confetti" aria-hidden="true" id="confetti"></div>
+          <div class="avatar-stack big" aria-hidden="true">
+            <span class="avatar">🐶</span>
+          </div>
+          <h2>好事即将发生😁</h2>
+          <p id="endingCopy"></p>
+          <div class="summary-card">
+            <div>
+              <span>DATE</span>
+              <strong id="summaryDate"></strong>
+            </div>
+            <div>
+              <span>TIME</span>
+              <strong id="summaryTime"></strong>
+            </div>
+            <div>
+              <span>MENU</span>
+              <strong id="summaryFood"></strong>
+            </div>
+          </div>
+          <button class="ghost-button" data-next="ask">再玩一次</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const noLabels = ["no", "再想想", "真拒绝吗", "😭"];
+      const foodOptions = [
+        { label: "披萨", icon: "🍕" },
+        { label: "寿司", icon: "🍣" },
+        { label: "火锅", icon: "🍲" },
+        { label: "烤肉", icon: "🥩" },
+        { label: "早茶", icon: "🥟" },
+        { label: "拉面", icon: "🍜" },
+        { label: "麻辣烫", icon: "🌶️" },
+        { label: "小龙虾", icon: "🦞" },
+        { label: "烧烤", icon: "🍢" },
+        { label: "其他", icon: "✍️" },
+      ];
+
+      const panels = Array.from(document.querySelectorAll("[data-step]"));
+      const noButton = document.querySelector("#noButton");
+      const dateInput = document.querySelector("#dateInput");
+      const timeInput = document.querySelector("#timeInput");
+      const foodGrid = document.querySelector("#foodGrid");
+      const confetti = document.querySelector("#confetti");
+      let currentStep = "ask";
+      let noIndex = 0;
+      let selectedFood = "火锅";
+
+      function todayValue() {
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+      }
+
+      function formatDate(value) {
+        const date = new Date(`${value}T12:00:00`);
+        if (Number.isNaN(date.getTime())) return value;
+        return new Intl.DateTimeFormat("zh-CN", {
+          month: "long",
+          day: "numeric",
+          weekday: "short",
+        }).format(date);
+      }
+
+      function showStep(step) {
+        currentStep = step;
+        panels.forEach((panel) => {
+          panel.classList.toggle("active", panel.dataset.step === step);
+        });
+
+        if (step === "ask") {
+          noIndex = 0;
+          noButton.textContent = noLabels[0];
+          noButton.style.transform = "translate(0, 0)";
+        }
+
+        if (step === "ending") {
+          const displayDate = formatDate(dateInput.value);
+          const displayTime = timeInput.value || "19:00";
+          document.querySelector("#endingCopy").textContent =
+            `${displayDate} ${displayTime}，我们去吃${selectedFood}。带好胃口，我带好路线。`;
+          document.querySelector("#summaryDate").textContent = displayDate;
+          document.querySelector("#summaryTime").textContent = displayTime;
+          document.querySelector("#summaryFood").textContent = selectedFood;
+        }
+      }
+
+      function moveNoButton() {
+        noIndex = Math.min(noIndex + 1, noLabels.length - 1);
+        noButton.textContent = noLabels[noIndex];
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 84 + Math.random() * 86;
+        const x = Math.round(Math.cos(angle) * distance);
+        const y = Math.round(Math.sin(angle) * distance);
+        noButton.style.transform = `translate(${x}px, ${y}px)`;
+      }
+
+      dateInput.value = todayValue();
+      dateInput.min = todayValue();
+
+      foodOptions.forEach((food) => {
+        const button = document.createElement("button");
+        button.className = `food-card${food.label === selectedFood ? " selected" : ""}`;
+        button.type = "button";
+        button.innerHTML = `<span aria-hidden="true">${food.icon}</span>${food.label}`;
+        button.addEventListener("click", () => {
+          selectedFood = food.label;
+          document.querySelectorAll(".food-card").forEach((card) => {
+            card.classList.toggle("selected", card === button);
+          });
+        });
+        foodGrid.appendChild(button);
+      });
+
+      for (let index = 0; index < 30; index += 1) {
+        const piece = document.createElement("span");
+        piece.style.animationDelay = `${index * -0.09}s`;
+        piece.style.background = `hsl(${325 + index * 22}, 85%, 62%)`;
+        piece.style.left = `${4 + (index % 9) * 11}%`;
+        piece.style.transform = `rotate(${index * 13}deg)`;
+        confetti.appendChild(piece);
+      }
+
+      document.querySelectorAll("[data-next]").forEach((button) => {
+        button.addEventListener("click", () => showStep(button.dataset.next));
+      });
+
+      window.addEventListener("pointermove", (event) => {
+        if (currentStep !== "ask") return;
+        const rect = noButton.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+
+        if (distance < 132) {
+          moveNoButton();
+        }
+      });
+
+      noButton.addEventListener("click", moveNoButton);
+      noButton.addEventListener("pointerenter", moveNoButton);
+      noButton.addEventListener("focus", moveNoButton);
+    </script>
+  </body>
+</html>
